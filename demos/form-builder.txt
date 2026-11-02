@@ -1,0 +1,1392 @@
+"use client"
+
+import * as React from "react"
+import { z } from "zod"
+import { User, Settings, CheckCircle, Shield, FileText, Building } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FormBuilder, useFormBuilder } from "./components/form-builder"
+import type { FormStep, FieldGroup, FormSection } from "./types/form"
+
+// Comprehensive form schemas
+const userProfileSchema = z.object({
+  // Personal Information
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+
+  // Address
+  street: z.string().min(1, "Street address is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  zipCode: z.string().min(5, "ZIP code required"),
+  country: z.string().min(1, "Country is required"),
+
+  // Preferences
+  theme: z.enum(["light", "dark", "system"]).optional(),
+  notifications: z.boolean().optional(),
+  newsletter: z.boolean().optional(),
+
+  // Professional
+  jobTitle: z.string().optional(),
+  company: z.string().optional(),
+  industry: z.string().optional(),
+  experience: z.string().optional(),
+
+  // Skills and interests
+  skills: z.array(z.string()).optional(),
+  interests: z.array(z.string()).optional(),
+  bio: z.string().max(500, "Bio too long").optional(),
+})
+
+type UserProfileData = z.infer<typeof userProfileSchema>
+
+// Business application schema
+const businessApplicationSchema = z.object({
+  // Company Information
+  companyName: z.string().min(1, "Company name is required"),
+  businessType: z.string().min(1, "Business type is required"),
+  industry: z.string().min(1, "Industry is required"),
+  employees: z.string().min(1, "Number of employees is required"),
+  revenue: z.string().optional(),
+  website: z.string().url("Invalid website URL").optional().or(z.literal("")),
+
+  // Contact Information
+  contactPerson: z.string().min(1, "Contact person is required"),
+  position: z.string().min(1, "Position is required"),
+  businessEmail: z.string().email("Invalid business email"),
+  businessPhone: z.string().min(1, "Business phone is required"),
+
+  // Address
+  businessAddress: z.string().min(1, "Business address is required"),
+  businessCity: z.string().min(1, "City is required"),
+  businessState: z.string().min(1, "State is required"),
+  businessZip: z.string().min(5, "ZIP code required"),
+
+  // Services
+  services: z.array(z.string()).min(1, "Select at least one service"),
+  budget: z.string().min(1, "Budget range is required"),
+  timeline: z.string().min(1, "Timeline is required"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+})
+
+type BusinessApplicationData = z.infer<typeof businessApplicationSchema>
+
+export default function FormBuilderDemo() {
+  const [submittedData, setSubmittedData] = React.useState<any>(null)
+  const [currentFormData, setCurrentFormData] = React.useState<any>({})
+  const [socialLoading, setSocialLoading] = React.useState<Record<string, boolean>>({})
+
+  // Form instances
+  const userProfileForm = useFormBuilder(userProfileSchema, {
+    defaultValues: {
+      theme: "system",
+      notifications: true,
+      newsletter: false,
+      country: "us",
+    },
+  })
+
+  const businessForm = useFormBuilder(businessApplicationSchema, {
+    defaultValues: {
+      businessType: "",
+      industry: "",
+      employees: "",
+    },
+  })
+
+  // Enhanced social login configurations
+  const socialConfigs = {
+    vertical: {
+      providers: [
+        { id: "google", name: "Google", variant: "outline" as const },
+        { id: "github", name: "GitHub", variant: "outline" as const },
+        { id: "twitter", name: "Twitter", variant: "outline" as const },
+      ],
+      layout: "vertical" as const,
+      position: "top" as const,
+      showDivider: true,
+      dividerText: "OR",
+      loading: socialLoading,
+      onProviderClick: handleSocialLogin,
+    },
+    horizontal: {
+      providers: [
+        { id: "google", name: "Google", variant: "outline" as const },
+        { id: "github", name: "GitHub", variant: "outline" as const },
+        { id: "twitter", name: "Twitter", variant: "outline" as const },
+      ],
+      layout: "horizontal" as const,
+      position: "top" as const,
+      showDivider: true,
+      dividerText: "OR",
+      loading: socialLoading,
+      onProviderClick: handleSocialLogin,
+    },
+    grid2: {
+      providers: [
+        { id: "google", name: "Google", variant: "outline" as const },
+        { id: "github", name: "GitHub", variant: "outline" as const },
+        { id: "twitter", name: "Twitter", variant: "outline" as const },
+        { id: "facebook", name: "Facebook", variant: "outline" as const },
+      ],
+      layout: "grid" as const,
+      columns: 2,
+      position: "top" as const,
+      showDivider: true,
+      dividerText: "OR",
+      loading: socialLoading,
+      onProviderClick: handleSocialLogin,
+    },
+    grid3: {
+      providers: [
+        { id: "google", name: "Google", variant: "outline" as const },
+        { id: "github", name: "GitHub", variant: "outline" as const },
+        { id: "twitter", name: "Twitter", variant: "outline" as const },
+        { id: "facebook", name: "Facebook", variant: "outline" as const },
+        { id: "linkedin", name: "LinkedIn", variant: "outline" as const },
+        { id: "apple", name: "Apple", variant: "outline" as const },
+      ],
+      layout: "grid" as const,
+      columns: 3,
+      position: "top" as const,
+      showDivider: true,
+      dividerText: "OR",
+      loading: socialLoading,
+      onProviderClick: handleSocialLogin,
+    },
+    grid4: {
+      providers: [
+        { id: "google", name: "Google", variant: "outline" as const },
+        { id: "github", name: "GitHub", variant: "outline" as const },
+        { id: "twitter", name: "Twitter", variant: "outline" as const },
+        { id: "facebook", name: "Facebook", variant: "outline" as const },
+        { id: "linkedin", name: "LinkedIn", variant: "outline" as const },
+        { id: "apple", name: "Apple", variant: "outline" as const },
+        { id: "microsoft", name: "Microsoft", variant: "outline" as const },
+        { id: "discord", name: "Discord", variant: "outline" as const },
+      ],
+      layout: "grid" as const,
+      columns: 4,
+      position: "top" as const,
+      showDivider: true,
+      dividerText: "OR",
+      loading: socialLoading,
+      onProviderClick: handleSocialLogin,
+    },
+  }
+
+  async function handleSocialLogin(providerId: string) {
+    setSocialLoading((prev) => ({ ...prev, [providerId]: true }))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    console.log(`${providerId} login clicked`)
+    setSocialLoading((prev) => ({ ...prev, [providerId]: false }))
+  }
+
+  const handleFormSubmit = async (data: any, formData: FormData) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    console.log("Form submitted:", data)
+    setSubmittedData(data)
+  }
+
+  const handleFormError = (errors: any) => {
+    console.error("Form validation errors:", errors)
+  }
+
+  const handleStepChange = (step: number, data: any) => {
+    console.log(`Step changed to ${step}:`, data)
+    setCurrentFormData(data)
+  }
+
+  // Field Groups Demo
+  const userProfileGroups: FieldGroup<UserProfileData>[] = [
+    {
+      id: "personal",
+      title: "Personal Information",
+      description: "Your basic personal details",
+      layout: "grid",
+      columns: 2,
+      fields: [
+        {
+          id: "firstName",
+          name: "firstName",
+          type: "text",
+          label: "First Name",
+          placeholder: "Enter your first name",
+        },
+        {
+          id: "lastName",
+          name: "lastName",
+          type: "text",
+          label: "Last Name",
+          placeholder: "Enter your last name",
+        },
+        {
+          id: "email",
+          name: "email",
+          type: "email",
+          label: "Email Address",
+          placeholder: "Enter your email",
+        },
+        {
+          id: "phone",
+          name: "phone",
+          type: "tel",
+          label: "Phone Number",
+          placeholder: "+1 (555) 123-4567",
+        },
+        {
+          id: "dateOfBirth",
+          name: "dateOfBirth",
+          type: "date",
+          label: "Date of Birth",
+          max: new Date().toISOString().split("T")[0],
+        },
+      ],
+    },
+    {
+      id: "address",
+      title: "Address Information",
+      description: "Your current address details",
+      layout: "vertical",
+      fields: [
+        {
+          id: "street",
+          name: "street",
+          type: "text",
+          label: "Street Address",
+          placeholder: "123 Main St",
+        },
+        {
+          id: "city",
+          name: "city",
+          type: "text",
+          label: "City",
+          placeholder: "New York",
+        },
+        {
+          id: "state",
+          name: "state",
+          type: "text",
+          label: "State/Province",
+          placeholder: "NY",
+        },
+        {
+          id: "zipCode",
+          name: "zipCode",
+          type: "text",
+          label: "ZIP/Postal Code",
+          placeholder: "10001",
+        },
+        {
+          id: "country",
+          name: "country",
+          type: "select",
+          label: "Country",
+          options: [
+            { value: "us", label: "United States" },
+            { value: "ca", label: "Canada" },
+            { value: "uk", label: "United Kingdom" },
+            { value: "de", label: "Germany" },
+            { value: "fr", label: "France" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "professional",
+      title: "Professional Information",
+      description: "Your work and career details",
+      layout: "grid",
+      columns: 2,
+      fields: [
+        {
+          id: "jobTitle",
+          name: "jobTitle",
+          type: "text",
+          label: "Job Title",
+          placeholder: "Software Engineer",
+        },
+        {
+          id: "company",
+          name: "company",
+          type: "text",
+          label: "Company",
+          placeholder: "Acme Corp",
+        },
+        {
+          id: "industry",
+          name: "industry",
+          type: "select",
+          label: "Industry",
+          options: [
+            { value: "tech", label: "Technology" },
+            { value: "finance", label: "Finance" },
+            { value: "healthcare", label: "Healthcare" },
+            { value: "education", label: "Education" },
+            { value: "retail", label: "Retail" },
+            { value: "other", label: "Other" },
+          ],
+        },
+        {
+          id: "experience",
+          name: "experience",
+          type: "select",
+          label: "Years of Experience",
+          options: [
+            { value: "0-1", label: "0-1 years" },
+            { value: "2-5", label: "2-5 years" },
+            { value: "6-10", label: "6-10 years" },
+            { value: "11-15", label: "11-15 years" },
+            { value: "15+", label: "15+ years" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "preferences",
+      title: "Preferences & Settings",
+      description: "Customize your experience",
+      layout: "vertical",
+      fields: [
+        {
+          id: "theme",
+          name: "theme",
+          type: "radio",
+          label: "Theme Preference",
+          options: [
+            { value: "light", label: "Light" },
+            { value: "dark", label: "Dark" },
+            { value: "system", label: "System" },
+          ],
+        },
+        {
+          id: "notifications",
+          name: "notifications",
+          type: "switch",
+          label: "Enable notifications",
+        },
+        {
+          id: "newsletter",
+          name: "newsletter",
+          type: "switch",
+          label: "Subscribe to newsletter",
+        },
+        {
+          id: "skills",
+          name: "skills",
+          type: "multiselect",
+          label: "Skills",
+          options: [
+            { value: "javascript", label: "JavaScript" },
+            { value: "typescript", label: "TypeScript" },
+            { value: "react", label: "React" },
+            { value: "nodejs", label: "Node.js" },
+            { value: "python", label: "Python" },
+            { value: "design", label: "Design" },
+          ],
+        },
+        {
+          id: "bio",
+          name: "bio",
+          type: "textarea",
+          label: "Bio",
+          placeholder: "Tell us about yourself...",
+          rows: 4,
+        },
+      ],
+    },
+  ]
+
+  // Sections Demo
+  const businessSections: FormSection<BusinessApplicationData>[] = [
+    {
+      id: "company-info",
+      title: "Company Information",
+      description: "Tell us about your business",
+      groups: [
+        {
+          id: "basic-info",
+          title: "Basic Information",
+          layout: "grid",
+          columns: 2,
+          fields: [
+            {
+              id: "companyName",
+              name: "companyName",
+              type: "text",
+              label: "Company Name",
+              placeholder: "Acme Corporation",
+            },
+            {
+              id: "businessType",
+              name: "businessType",
+              type: "select",
+              label: "Business Type",
+              options: [
+                { value: "llc", label: "LLC" },
+                { value: "corporation", label: "Corporation" },
+                { value: "partnership", label: "Partnership" },
+                { value: "sole-proprietorship", label: "Sole Proprietorship" },
+              ],
+            },
+            {
+              id: "industry",
+              name: "industry",
+              type: "select",
+              label: "Industry",
+              options: [
+                { value: "tech", label: "Technology" },
+                { value: "finance", label: "Finance" },
+                { value: "healthcare", label: "Healthcare" },
+                { value: "retail", label: "Retail" },
+                { value: "manufacturing", label: "Manufacturing" },
+                { value: "other", label: "Other" },
+              ],
+            },
+            {
+              id: "employees",
+              name: "employees",
+              type: "select",
+              label: "Number of Employees",
+              options: [
+                { value: "1-10", label: "1-10" },
+                { value: "11-50", label: "11-50" },
+                { value: "51-200", label: "51-200" },
+                { value: "201-1000", label: "201-1000" },
+                { value: "1000+", label: "1000+" },
+              ],
+            },
+            {
+              id: "revenue",
+              name: "revenue",
+              type: "select",
+              label: "Annual Revenue",
+              options: [
+                { value: "0-100k", label: "$0 - $100K" },
+                { value: "100k-1m", label: "$100K - $1M" },
+                { value: "1m-10m", label: "$1M - $10M" },
+                { value: "10m+", label: "$10M+" },
+              ],
+            },
+            {
+              id: "website",
+              name: "website",
+              type: "url",
+              label: "Website",
+              placeholder: "https://example.com",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "contact-info",
+      title: "Contact Information",
+      description: "Primary contact details",
+      groups: [
+        {
+          id: "contact-person",
+          title: "Primary Contact",
+          layout: "grid",
+          columns: 2,
+          fields: [
+            {
+              id: "contactPerson",
+              name: "contactPerson",
+              type: "text",
+              label: "Contact Person",
+              placeholder: "John Doe",
+            },
+            {
+              id: "position",
+              name: "position",
+              type: "text",
+              label: "Position/Title",
+              placeholder: "CEO, Manager, etc.",
+            },
+            {
+              id: "businessEmail",
+              name: "businessEmail",
+              type: "email",
+              label: "Business Email",
+              placeholder: "contact@company.com",
+            },
+            {
+              id: "businessPhone",
+              name: "businessPhone",
+              type: "tel",
+              label: "Business Phone",
+              placeholder: "+1 (555) 123-4567",
+            },
+          ],
+        },
+        {
+          id: "business-address",
+          title: "Business Address",
+          layout: "vertical",
+          fields: [
+            {
+              id: "businessAddress",
+              name: "businessAddress",
+              type: "text",
+              label: "Street Address",
+              placeholder: "123 Business Ave",
+            },
+            {
+              id: "businessCity",
+              name: "businessCity",
+              type: "text",
+              label: "City",
+              placeholder: "New York",
+            },
+            {
+              id: "businessState",
+              name: "businessState",
+              type: "text",
+              label: "State/Province",
+              placeholder: "NY",
+            },
+            {
+              id: "businessZip",
+              name: "businessZip",
+              type: "text",
+              label: "ZIP/Postal Code",
+              placeholder: "10001",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "services",
+      title: "Services & Requirements",
+      description: "What services do you need?",
+      groups: [
+        {
+          id: "service-details",
+          title: "Service Requirements",
+          layout: "vertical",
+          fields: [
+            {
+              id: "services",
+              name: "services",
+              type: "checkbox",
+              label: "Services Needed",
+              options: [
+                { value: "web-development", label: "Web Development" },
+                { value: "mobile-app", label: "Mobile App Development" },
+                { value: "design", label: "UI/UX Design" },
+                { value: "consulting", label: "Technical Consulting" },
+                { value: "maintenance", label: "Maintenance & Support" },
+                { value: "other", label: "Other" },
+              ],
+            },
+            {
+              id: "budget",
+              name: "budget",
+              type: "select",
+              label: "Budget Range",
+              options: [
+                { value: "5k-10k", label: "$5K - $10K" },
+                { value: "10k-25k", label: "$10K - $25K" },
+                { value: "25k-50k", label: "$25K - $50K" },
+                { value: "50k-100k", label: "$50K - $100K" },
+                { value: "100k+", label: "$100K+" },
+              ],
+            },
+            {
+              id: "timeline",
+              name: "timeline",
+              type: "select",
+              label: "Project Timeline",
+              options: [
+                { value: "1-3-months", label: "1-3 months" },
+                { value: "3-6-months", label: "3-6 months" },
+                { value: "6-12-months", label: "6-12 months" },
+                { value: "12+months", label: "12+ months" },
+              ],
+            },
+            {
+              id: "description",
+              name: "description",
+              type: "textarea",
+              label: "Project Description",
+              placeholder: "Describe your project requirements in detail...",
+              rows: 5,
+            },
+          ],
+        },
+      ],
+    },
+  ]
+
+  // Multi-step form
+  const multiStepSteps: FormStep<UserProfileData>[] = [
+    {
+      id: "personal",
+      title: "Personal Details",
+      description: "Let's start with your basic information",
+      fields: [
+        {
+          id: "firstName",
+          name: "firstName",
+          type: "text",
+          label: "First Name",
+          placeholder: "Enter your first name",
+        },
+        {
+          id: "lastName",
+          name: "lastName",
+          type: "text",
+          label: "Last Name",
+          placeholder: "Enter your last name",
+        },
+        {
+          id: "email",
+          name: "email",
+          type: "email",
+          label: "Email Address",
+          placeholder: "Enter your email",
+        },
+        {
+          id: "phone",
+          name: "phone",
+          type: "tel",
+          label: "Phone Number",
+          placeholder: "+1 (555) 123-4567",
+        },
+      ],
+    },
+    {
+      id: "address",
+      title: "Address Information",
+      description: "Where can we reach you?",
+      fields: [
+        {
+          id: "street",
+          name: "street",
+          type: "text",
+          label: "Street Address",
+          placeholder: "123 Main St",
+        },
+        {
+          id: "city",
+          name: "city",
+          type: "text",
+          label: "City",
+          placeholder: "New York",
+        },
+        {
+          id: "state",
+          name: "state",
+          type: "text",
+          label: "State/Province",
+          placeholder: "NY",
+        },
+        {
+          id: "zipCode",
+          name: "zipCode",
+          type: "text",
+          label: "ZIP/Postal Code",
+          placeholder: "10001",
+        },
+        {
+          id: "country",
+          name: "country",
+          type: "select",
+          label: "Country",
+          options: [
+            { value: "us", label: "United States" },
+            { value: "ca", label: "Canada" },
+            { value: "uk", label: "United Kingdom" },
+            { value: "de", label: "Germany" },
+            { value: "fr", label: "France" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "preferences",
+      title: "Preferences",
+      description: "Customize your experience",
+      fields: [
+        {
+          id: "theme",
+          name: "theme",
+          type: "radio",
+          label: "Theme Preference",
+          options: [
+            { value: "light", label: "Light" },
+            { value: "dark", label: "Dark" },
+            { value: "system", label: "System" },
+          ],
+        },
+        {
+          id: "notifications",
+          name: "notifications",
+          type: "switch",
+          label: "Enable notifications",
+        },
+        {
+          id: "newsletter",
+          name: "newsletter",
+          type: "switch",
+          label: "Subscribe to newsletter",
+        },
+      ],
+    },
+  ]
+
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-6xl space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold">Complete Form Builder Demo</h1>
+          <p className="text-muted-foreground">
+            Comprehensive examples of fields, groups, sections, steps, and social login layouts
+          </p>
+        </div>
+
+        <Tabs defaultValue="simple" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="simple">Simple Fields</TabsTrigger>
+            <TabsTrigger value="fields">Normal Fields</TabsTrigger>
+            <TabsTrigger value="groups">Field Groups</TabsTrigger>
+            <TabsTrigger value="sections">Sections</TabsTrigger>
+            <TabsTrigger value="steps">Multi-Step</TabsTrigger>
+            <TabsTrigger value="social">Social Layouts</TabsTrigger>
+            <TabsTrigger value="data">Form Data</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="fields" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Normal Fields Form
+                </CardTitle>
+                <CardDescription>Simple form with individual fields and title/description</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormBuilder
+                  title="Contact Information"
+                  description="Please fill out your contact details below"
+                  socialLogin={socialConfigs.vertical}
+                  onSubmit={handleFormSubmit}
+                  onError={handleFormError}
+                  fields={[
+                    {
+                      id: "name",
+                      name: "name",
+                      type: "text",
+                      label: "Full Name",
+                      placeholder: "Enter your full name",
+                    },
+                    {
+                      id: "email",
+                      name: "email",
+                      type: "email",
+                      label: "Email Address",
+                      placeholder: "Enter your email",
+                    },
+                    {
+                      id: "phone",
+                      name: "phone",
+                      type: "tel",
+                      label: "Phone Number",
+                      placeholder: "+1 (555) 123-4567",
+                    },
+                    {
+                      id: "subject",
+                      name: "subject",
+                      type: "select",
+                      label: "Subject",
+                      options: [
+                        { value: "general", label: "General Inquiry" },
+                        { value: "support", label: "Support" },
+                        { value: "sales", label: "Sales" },
+                        { value: "partnership", label: "Partnership" },
+                      ],
+                    },
+                    {
+                      id: "message",
+                      name: "message",
+                      type: "textarea",
+                      label: "Message",
+                      placeholder: "Your message here...",
+                      rows: 4,
+                    },
+                    {
+                      id: "newsletter",
+                      name: "newsletter",
+                      type: "checkbox",
+                      label: "Subscribe to our newsletter",
+                    },
+                  ]}
+                  layout="vertical"
+                  spacing="md"
+                  submitText="Send Message"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="groups" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Field Groups Form
+                </CardTitle>
+                <CardDescription>Organized form with grouped fields and different layouts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormBuilder
+                  title="User Profile"
+                  description="Complete your profile information"
+                  schema={userProfileSchema}
+                  form={userProfileForm}
+                  socialLogin={socialConfigs.horizontal}
+                  groups={userProfileGroups}
+                  onSubmit={handleFormSubmit}
+                  onError={handleFormError}
+                  onChange={setCurrentFormData}
+                  layout="vertical"
+                  spacing="lg"
+                  submitText="Save Profile"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sections" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  Sections Form
+                </CardTitle>
+                <CardDescription>Complex form with collapsible sections containing grouped fields</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormBuilder
+                  title="Business Application"
+                  description="Apply for our business services program"
+                  schema={businessApplicationSchema}
+                  form={businessForm}
+                  socialLogin={socialConfigs.grid2}
+                  sections={businessSections}
+                  onSubmit={handleFormSubmit}
+                  onError={handleFormError}
+                  onChange={setCurrentFormData}
+                  layout="vertical"
+                  spacing="lg"
+                  submitText="Submit Application"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="steps" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  Multi-Step Form
+                </CardTitle>
+                <CardDescription>Step-by-step form with progress tracking and validation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormBuilder
+                  schema={userProfileSchema}
+                  form={userProfileForm}
+                  steps={multiStepSteps}
+                  onSubmit={handleFormSubmit}
+                  onError={handleFormError}
+                  onStepChange={handleStepChange}
+                  showStepProgress={true}
+                  showStepNavigation={true}
+                  allowStepNavigation={true}
+                  validateStepOnNext={true}
+                  stepNavigationPosition="bottom"
+                  submitText="Complete Profile"
+                  nextText="Continue"
+                  previousText="Back"
+                  layout="vertical"
+                  spacing="md"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="social" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Vertical Layout</CardTitle>
+                  <CardDescription>Social buttons stacked vertically</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Sign In"
+                    description="Choose your preferred sign-in method"
+                    socialLogin={socialConfigs.vertical}
+                    fields={[
+                      {
+                        id: "email",
+                        name: "email",
+                        type: "email",
+                        label: "Email",
+                        placeholder: "Enter your email",
+                      },
+                      {
+                        id: "password",
+                        name: "password",
+                        type: "password",
+                        label: "Password",
+                        placeholder: "Enter your password",
+                      },
+                    ]}
+                    onSubmit={handleFormSubmit}
+                    submitText="Sign In"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Horizontal Layout</CardTitle>
+                  <CardDescription>Social buttons in a row</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Quick Sign Up"
+                    description="Get started in seconds"
+                    socialLogin={socialConfigs.horizontal}
+                    fields={[
+                      {
+                        id: "name",
+                        name: "name",
+                        type: "text",
+                        label: "Full Name",
+                        placeholder: "Enter your name",
+                      },
+                      {
+                        id: "email",
+                        name: "email",
+                        type: "email",
+                        label: "Email",
+                        placeholder: "Enter your email",
+                      },
+                    ]}
+                    onSubmit={handleFormSubmit}
+                    submitText="Sign Up"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Grid Layout (2 Columns)</CardTitle>
+                  <CardDescription>Social buttons in a 2-column grid</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Join Our Platform"
+                    description="Multiple sign-in options available"
+                    socialLogin={socialConfigs.grid2}
+                    fields={[
+                      {
+                        id: "username",
+                        name: "username",
+                        type: "text",
+                        label: "Username",
+                        placeholder: "Choose a username",
+                      },
+                    ]}
+                    onSubmit={handleFormSubmit}
+                    submitText="Create Account"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Grid Layout (3 Columns)</CardTitle>
+                  <CardDescription>Social buttons in a 3-column grid</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Enterprise Sign In"
+                    description="Multiple authentication providers"
+                    socialLogin={socialConfigs.grid3}
+                    fields={[
+                      {
+                        id: "companyEmail",
+                        name: "companyEmail",
+                        type: "email",
+                        label: "Company Email",
+                        placeholder: "Enter your company email",
+                      },
+                    ]}
+                    onSubmit={handleFormSubmit}
+                    submitText="Access Dashboard"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Grid Layout (4 Columns)</CardTitle>
+                <CardDescription>Social buttons in a 4-column grid with many providers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormBuilder
+                  title="Universal Sign In"
+                  description="Choose from our wide range of authentication providers"
+                  socialLogin={socialConfigs.grid4}
+                  fields={[
+                    {
+                      id: "identifier",
+                      name: "identifier",
+                      type: "text",
+                      label: "Email or Username",
+                      placeholder: "Enter email or username",
+                    },
+                  ]}
+                  onSubmit={handleFormSubmit}
+                  submitText="Continue"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current Form Data</CardTitle>
+                  <CardDescription>Real-time form values</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
+                    {JSON.stringify(currentFormData, null, 2)}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Submitted Data</CardTitle>
+                  <CardDescription>Last form submission</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {submittedData ? (
+                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
+                      {JSON.stringify(submittedData, null, 2)}
+                    </pre>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No data submitted yet</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Form Builder Features</CardTitle>
+                <CardDescription>Complete feature overview</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-500" />
+                      Form Structures
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        "Normal Fields",
+                        "Field Groups",
+                        "Sections",
+                        "Multi-Step",
+                        "Mixed Layouts",
+                        "Conditional Fields",
+                        "Validation",
+                        "Type Safety",
+                      ].map((feature) => (
+                        <Badge key={feature} variant="default" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-green-500" />
+                      Social Login
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        "Vertical Layout",
+                        "Horizontal Layout",
+                        "Grid 2 Columns",
+                        "Grid 3 Columns",
+                        "Grid 4 Columns",
+                        "Loading States",
+                        "Custom Providers",
+                        "Position Control",
+                      ].map((feature) => (
+                        <Badge key={feature} variant="secondary" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-purple-500" />
+                      Customization
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        "Custom Styling",
+                        "Layout Control",
+                        "Spacing Options",
+                        "Button Props",
+                        "Form Titles",
+                        "Descriptions",
+                        "Responsive Design",
+                        "Theme Support",
+                      ].map((feature) => (
+                        <Badge key={feature} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="simple" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Simple Contact Form</CardTitle>
+                  <CardDescription>Just fields, no groups or sections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Get in Touch"
+                    description="Send us a message and we'll get back to you"
+                    onSubmit={handleFormSubmit}
+                    onError={handleFormError}
+                    fields={[
+                      {
+                        id: "name",
+                        name: "name",
+                        type: "text",
+                        label: "Full Name",
+                        placeholder: "Enter your full name",
+                      },
+                      {
+                        id: "email",
+                        name: "email",
+                        type: "email",
+                        label: "Email Address",
+                        placeholder: "your.email@example.com",
+                      },
+                      {
+                        id: "subject",
+                        name: "subject",
+                        type: "select",
+                        label: "Subject",
+                        options: [
+                          { value: "general", label: "General Inquiry" },
+                          { value: "support", label: "Technical Support" },
+                          { value: "billing", label: "Billing Question" },
+                          { value: "feedback", label: "Feedback" },
+                        ],
+                      },
+                      {
+                        id: "message",
+                        name: "message",
+                        type: "textarea",
+                        label: "Message",
+                        placeholder: "Tell us how we can help you...",
+                        rows: 4,
+                      },
+                      {
+                        id: "urgent",
+                        name: "urgent",
+                        type: "checkbox",
+                        label: "This is urgent",
+                      },
+                    ]}
+                    submitText="Send Message"
+                    layout="vertical"
+                    spacing="md"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Newsletter Signup</CardTitle>
+                  <CardDescription>Minimal form with just essential fields</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Stay Updated"
+                    description="Subscribe to our newsletter for the latest updates"
+                    socialLogin={socialConfigs.horizontal}
+                    onSubmit={handleFormSubmit}
+                    onError={handleFormError}
+                    fields={[
+                      {
+                        id: "email",
+                        name: "email",
+                        type: "email",
+                        label: "Email Address",
+                        placeholder: "Enter your email",
+                      },
+                      {
+                        id: "firstName",
+                        name: "firstName",
+                        type: "text",
+                        label: "First Name",
+                        placeholder: "Your first name",
+                      },
+                      {
+                        id: "interests",
+                        name: "interests",
+                        type: "checkbox",
+                        label: "I'm interested in:",
+                        options: [
+                          { value: "tech", label: "Technology Updates" },
+                          { value: "product", label: "Product News" },
+                          { value: "events", label: "Events & Webinars" },
+                        ],
+                      },
+                    ]}
+                    submitText="Subscribe"
+                    layout="vertical"
+                    spacing="sm"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Survey</CardTitle>
+                  <CardDescription>Simple feedback form with various field types</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Quick Feedback"
+                    description="Help us improve by sharing your thoughts"
+                    onSubmit={handleFormSubmit}
+                    onError={handleFormError}
+                    fields={[
+                      {
+                        id: "rating",
+                        name: "rating",
+                        type: "radio",
+                        label: "How would you rate our service?",
+                        options: [
+                          { value: "excellent", label: "Excellent" },
+                          { value: "good", label: "Good" },
+                          { value: "average", label: "Average" },
+                          { value: "poor", label: "Poor" },
+                        ],
+                      },
+                      {
+                        id: "recommend",
+                        name: "recommend",
+                        type: "switch",
+                        label: "Would you recommend us to others?",
+                      },
+                      {
+                        id: "improvements",
+                        name: "improvements",
+                        type: "multiselect",
+                        label: "What could we improve?",
+                        options: [
+                          { value: "speed", label: "Response Speed" },
+                          { value: "quality", label: "Service Quality" },
+                          { value: "pricing", label: "Pricing" },
+                          { value: "features", label: "Features" },
+                          { value: "support", label: "Customer Support" },
+                        ],
+                      },
+                      {
+                        id: "comments",
+                        name: "comments",
+                        type: "textarea",
+                        label: "Additional Comments",
+                        placeholder: "Any other feedback?",
+                        rows: 3,
+                      },
+                    ]}
+                    submitText="Submit Feedback"
+                    layout="vertical"
+                    spacing="md"
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Login Form</CardTitle>
+                  <CardDescription>Simple authentication with social options</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormBuilder
+                    title="Welcome Back"
+                    description="Sign in to your account"
+                    socialLogin={socialConfigs.grid2}
+                    onSubmit={handleFormSubmit}
+                    onError={handleFormError}
+                    fields={[
+                      {
+                        id: "email",
+                        name: "email",
+                        type: "email",
+                        label: "Email",
+                        placeholder: "Enter your email",
+                      },
+                      {
+                        id: "password",
+                        name: "password",
+                        type: "password",
+                        label: "Password",
+                        placeholder: "Enter your password",
+                      },
+                      {
+                        id: "rememberMe",
+                        name: "rememberMe",
+                        type: "checkbox",
+                        label: "Remember me",
+                      },
+                    ]}
+                    submitText="Sign In"
+                    layout="vertical"
+                    spacing="md"
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  )
+}

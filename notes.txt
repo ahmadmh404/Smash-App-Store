@@ -1,0 +1,53 @@
+🔃: dashboard user states method
+✅: Add the getAppByCategory to api.php
+🔃: Add the app object to the downlaod returned data
+🔃: create these 4 cats by default in the db (featured, top rated, games, apps)
+🔃: You can make AI handle adding apps/games to the first 2 cats (featured, top rated; (maybe top 10 rated in this category)).
+✅: Add mehtod to retrive the main cats to show in the home screen.
+
+Q: is purchased app a downloaded app ?
+
+🔃: Make a getUserPurchasedApps method pleaseeee for the purchased apps section in the dashboard
+
+🔃: DAshboard States: 
+     if (user.type === "developer") {
+        stats.push(
+        {
+            title: "Published Apps",
+            value: formatNumber(states?.published_apps),
+            icon: Package,
+        },
+        {
+            title: "Total Revenue",
+            value: `$${formatNumber(states?.total_revenue)}`,
+            icon: TrendingUp,
+        },
+        {
+            title: "Your App Download",
+            value: formatNumber(states?.your_total_downloads),
+            icon: Activity,
+        },
+        { title: "Avg Rating", value: `${states.avg_rating}`, icon: Star }
+        );
+    }
+
+    if (user.type === "admin") {
+        stats.push(
+        {
+            title: "Pending Requests",
+            value: `${states.pending_requests}`,
+            icon: FileText,
+        },
+        { title: "Total Users", value: `${states.total_users}`, icon: Users },
+        {
+            title: "Store Revenue",
+            value: `$${states.store_revenue}`,
+            icon: DollarSign,
+        },
+        {
+            title: "Active Apps",
+            value: formatNumber(states.active_apps),
+            icon: Package,
+        }
+        );
+    }
